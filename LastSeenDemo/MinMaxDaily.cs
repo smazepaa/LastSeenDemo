@@ -13,14 +13,16 @@ public class MinMaxDaily
     public (double, double) CalculateMinMax(List<UserTimeSpan> value, DateTimeOffset from, DateTimeOffset to)
     {
         var listOnline = new List<double>();
+        var minimum = 0.0;
+        var maximum = 0.0;
         while (from <= to)
         {
             double dailyOnlineTime = _onlineDetector.CalculateTotalTimeForUser(value, from, from.AddDays(1));
             listOnline.Add(dailyOnlineTime);
             from = from.AddDays(1);
+            minimum = listOnline.Min();
+            maximum = listOnline.Max();
         }
-
-        listOnline.Sort(); // sorted in ascending order
-        return (listOnline[0], listOnline[^1]);
+        return (minimum, maximum);
     }
 }
