@@ -1,16 +1,18 @@
+using System.Text;
+using System.Text.Json;
 using LastSeenDemo;
 
 // Global Application Services
 var dateTimeProvider = new DateTimeProvider();
 var loader = new Loader();
 var detector = new OnlineDetector(dateTimeProvider);
-var minMax = new MinMaxDaily(detector);
 var predictor = new Predictor(detector);
 var userLoader = new UserLoader(loader, "https://sef.podkolzin.consulting/api/users/lastSeen");
 var application = new LastSeenApplication(userLoader);
 var userTransformer = new UserTransformer(dateTimeProvider);
 var allUsersTransformer = new AllUsersTransformer(userTransformer);
 var worker = new Worker(userLoader, allUsersTransformer);
+
 // End Global Application Services
 
 Task.Run(worker.LoadDataPeriodically); // Launch collecting data in background
@@ -124,44 +126,35 @@ void Setup4thAssignmentsEndpoints()
 
 void Setup5thAssignmentsEndpoints()
 {
-    var userGuids = new List<Guid>
+    app.MapPost("/api/report/overall", async (HttpContext context) =>
     {
-        new Guid("2fba2529-c166-8574-2da2-eac544d82634"),
-        new Guid("8b0b5db6-19d6-d777-575e-915c2a77959a"),
-        new Guid("e13412b2-fe46-7149-6593-e47043f39c91"),
-        new Guid("cbf0d80b-8532-070b-0df6-a0279e65d0b2"),
-        new Guid("de5b8815-1689-7c78-44e1-33375e7e2931")
-    };
-
-    // Report 1 - overall (dailyAverage, weeklyAverage, total, min, max)
-    app.MapGet("/api/report/overall", (DateTimeOffset from, DateTimeOffset to) =>
-    {
-        var report = new List<Dictionary<string, object>>();
-
-        foreach (var userId in userGuids) // Assuming you have userGuids defined earlier
+        // Read the JSON data from the request body
+        using (StreamReader reader = new StreamReader(context.Request.Body, Encoding.UTF8))
         {
-            if (worker.Users.TryGetValue(userId, out var user))
+            var requestBody = await reader.ReadToEndAsync();
+
+            // Deserialize the JSON to get the report request data
+            var reportRequest = JsonSerializer.Deserialize<ReportRequest>(requestBody);
+
+            if (reportRequest == null)
             {
-                var userReport = new Dictionary<string, object>
-                {
-                    { "UserId", userId }
-                };
-                
-                userReport["Total"] = detector.CalculateTotalTimeForUser(user);
-                userReport["DailyAverage"] = detector.CalculateDailyAverageForUser(user);
-                userReport["WeeklyAverage"] = detector.CalculateWeeklyAverageForUser(user);
-                var (min, max) = minMax.CalculateMinMax(user, from, to);
-                userReport["Min"] = min;
-                userReport["Max"] = max;
-
-                report.Add(userReport);
+                context.Response.StatusCode = 400; // Bad Request
+                return;
             }
+            
+            var report = new Report("overall", reportRequest.Users, reportRequest.Metrics, worker, detector);
+
+            if (report == null)
+            {
+                context.Response.StatusCode = 404; // Not Found
+                return;
+            }
+
+            // Assuming the report is successfully created, return the report as JSON
+            context.Response.StatusCode = 200; // OK
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(report));
+
         }
-
-        return Results.Json(report);
     });
-
-
-
-    // report 2 - daily(min, max)
 }
