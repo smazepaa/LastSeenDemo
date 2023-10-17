@@ -21,27 +21,27 @@ public class ReportItem
 
 public class Report
 {
-    private readonly string _report;
-    private readonly List<Guid> _users;
-    private readonly List<string> _metrics;
+    public string Name { get; set; }
+    public List<Guid> Users { get; set; }
+    public List<string> Metrics { get; set; }
     private readonly Worker _worker;
     private readonly OnlineDetector _detector;
-    private readonly MinMaxDaily _minMax;
+    private MinMaxDaily _minMax;
     
     public Report(string reportName, List<Guid> users, List<string> metrics, Worker worker, OnlineDetector onlineDetector)
     {
-        _report = reportName;
-        _metrics = metrics;
+        Name = reportName;
+        Metrics = metrics;
         _worker = worker;
         _detector = onlineDetector;
         _minMax = new MinMaxDaily(_detector);
-        _users = users;
+        Users = users;
     }
     public List<Dictionary<string, object>> CreateReport(DateTimeOffset from, DateTimeOffset to)
     {
         var report = new List<Dictionary<string, object>>();
 
-        foreach (var userId in _users)
+        foreach (var userId in Users)
         {
             if (_worker.Users.TryGetValue(userId, out var user))
             {
@@ -50,7 +50,7 @@ public class Report
                     { "UserId", userId }
                 };
 
-                foreach (var metric in _metrics)
+                foreach (var metric in Metrics)
                 {
                     switch (metric)
                     {
