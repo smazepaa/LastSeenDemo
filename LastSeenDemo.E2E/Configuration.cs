@@ -3,5 +3,5 @@
 public static class Configuration
 {
     public const string
-      BaseUrl = "https://sef.podkolzin.consulting/api/users/lastSeen";
+      BaseUrl = "http://localhost:5079";
 }

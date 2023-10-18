@@ -21,7 +21,7 @@ public class StatsApiTests
     public void When_GetStatsWithValidId_Should_ReturnValidObject()
     {
         var doug93UserId = new Guid("2fba2529-c166-8574-2da2-eac544d82634");
-        var (code, response) = HttpHelper.Get($"https://sef.podkolzin.consulting/api/stats/user?userId={doug93UserId}&date={DateTime.Now}");
+        var (code, response) = HttpHelper.Get($"/api/stats/user?userId={doug93UserId}&date={DateTime.Now}");
         
         var result = JObject.Parse(response);
         Assert.Equal(JTokenType.Boolean, result.Property("wasUserOnline").Value.Type);
