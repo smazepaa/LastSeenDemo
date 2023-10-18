@@ -49,15 +49,6 @@ void Setup3rdAssignmentsEndpoints()
     // Feature#1 - Implement endpoint that returns historical data for all users
     app.MapGet("/api/stats/users/", (DateTimeOffset date) =>
     {
-        // int usersOnline = 0;
-        // foreach (var (_, user) in users)
-        // {
-        //   if (detector.Detect(user, date))
-        //   {
-        //     usersOnline++;
-        //   }
-        // }
-        // return new { usersOnline };
         return new { usersOnline = detector.CountOnline(worker.Users, date) };
     });
 
