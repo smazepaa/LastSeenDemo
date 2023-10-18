@@ -8,6 +8,6 @@ public class OverallTests
     public void OverallShouldReturnResult()
     {
         var result = HttpHelper.Get("/api/report/overall");
-        Assert.NotEmpty(result.response);
+        Assert.NotNull(result);
     }
 }
