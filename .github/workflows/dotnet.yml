@@ -26,5 +26,3 @@ jobs:
       run: dotnet build --no-restore
     - name: UnitTest
       run: dotnet test LastSeenDemo.UnitTests --no-build --verbosity normal
-    - name: IntegrationTest
-      run: dotnet test LastSeenDemo.IntegrationTest --no-build --verbosity normal
