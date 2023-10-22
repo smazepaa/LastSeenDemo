@@ -37,47 +37,41 @@ public class Report
         _minMax = new MinMaxDaily(_detector);
         Users = users;
     }
-    public List<Dictionary<string, object>> CreateReport(DateTimeOffset from, DateTimeOffset to)
+    public void CreateReport(List<User> userList, DateTimeOffset from, DateTimeOffset to)
     {
-        var report = new List<Dictionary<string, object>>();
-
-        foreach (var userId in Users)
+        foreach (var userTimeSpan in Users)
         {
-            if (_worker.Users.TryGetValue(userId, out var user))
+            var userId = userTimeSpan;
+            var user = userList.FirstOrDefault(u => u.UserId == userId);
+            _worker.Users.TryGetValue(userId, out var userTime);
+            if (user != null)
             {
-                var userReport = new Dictionary<string, object>
-                {
-                    { "UserId", userId }
-                };
-
                 foreach (var metric in Metrics)
                 {
                     switch (metric)
                     {
                         case "total":
-                            userReport["total"] = _detector.CalculateTotalTimeForUser(user);
+                            user.Metrics["total"] = _detector.CalculateTotalTimeForUser(userTime);
                             break;
                         case "dailyAverage":
-                            userReport["dailyAverage"] = _detector.CalculateDailyAverageForUser(user);
+                            user.Metrics["dailyAverage"] = _detector.CalculateDailyAverageForUser(userTime);
                             break;
                         case "weeklyAverage":
-                            userReport["weeklyAverage"] = _detector.CalculateWeeklyAverageForUser(user);
+                            user.Metrics["weeklyAverage"] = _detector.CalculateWeeklyAverageForUser(userTime);
                             break;
                         case "min":
-                            var (min1, max1) = _minMax.CalculateMinMax(user, from, to);
-                            userReport["min"] = min1;
+                            var (min1, max1) = _minMax.CalculateMinMax(userTime, from, to);
+                            user.Metrics["min"] = min1;
                             break;
                         case "max":
-                            var (min2, max2) = _minMax.CalculateMinMax(user, from, to);
-                            userReport["max"] = max2;
+                            var (min2, max2) = _minMax.CalculateMinMax(userTime, from, to);
+                            user.Metrics["max"] = max2;
                             break;
                         default:
                             break;
                     }
                 }
-                report.Add(userReport);
             }
         }
-        return report;
     }
 }

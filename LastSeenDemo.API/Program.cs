@@ -163,26 +163,68 @@ void Setup5thAssignmentsEndpoints()
     
     app.MapGet("/api/report/overall", (DateTimeOffset from, DateTimeOffset to) =>
     {
-        var report = new List<Dictionary<string, object>>();
-        //var rep = reportManager.Reports.Find(r => r.Name == "overall");
+        var usersReport = new List<User>();
+        var userList = userLoader.LoadAllUsers();
+        var metrics = new List<string> { "Total", "DailyAverage", "WeeklyAverage", "Min", "Max"};
+        
+        var userMetrics = new List<UserMetricsDto>();
+
         foreach (var userId in userGuids)
         {
-            if (worker.Users.TryGetValue(userId, out var user))
+            if (worker.Users.TryGetValue(userId, out var userTimeSpans))
             {
-                var userReport = new Dictionary<string, object>
+                var user = userList.FirstOrDefault(u => u.UserId == userId);
+                if (user != null)
                 {
-                    { "UserId", userId }
-                };
-                
-                userReport["Total"] = detector.CalculateTotalTimeForUser(user);
-                userReport["DailyAverage"] = detector.CalculateDailyAverageForUser(user);
-                userReport["WeeklyAverage"] = detector.CalculateWeeklyAverageForUser(user);
-                var (min, max) = minMax.CalculateMinMax(user, from, to);
-                userReport["Min"] = min;
-                userReport["Max"] = max;
-                report.Add(userReport);
+                    user.Metrics = new Dictionary<string, double>();
+                    foreach (var metric in metrics)
+                    {
+                        switch (metric)
+                        {
+                            case "Total":
+                                user.Metrics[metric] = detector.CalculateTotalTimeForUser(userTimeSpans);
+                                break;
+                            case "DailyAverage":
+                                user.Metrics[metric] = detector.CalculateDailyAverageForUser(userTimeSpans);
+                                break;
+                            case "WeeklyAverage":
+                                user.Metrics[metric] = detector.CalculateWeeklyAverageForUser(userTimeSpans);
+                                break;
+                            case "Min":
+                                var (min, max) = minMax.CalculateMinMax(userTimeSpans, from, to);
+                                user.Metrics[metric] = min;
+                                break;
+                            case "Max":
+                                var (min2, max2) = minMax.CalculateMinMax(userTimeSpans, from, to);
+                                user.Metrics[metric] = max2;
+                                break;
+                        }
+                    }
+                    var userMetricsDto = new UserMetricsDto
+                    {
+                        UserId = user.UserId,
+                        Metrics = user.Metrics
+                    };
+
+                    userMetrics.Add(userMetricsDto);
+                }
             }
         }
-        return Results.Json(report);
+        Dictionary<string, string> metricsDescription = new Dictionary<string, string>()
+        {
+            { "DailyAverage", "<average time that user was online during the day (in seconds)>" },
+            { "WeeklyAverage", "<average time that user was online during the week (in seconds)>" },
+            { "Total", "<total time that user was online during selected date range (in seconds)>" },
+            { "Min", "<minimum daily online time of the user (in seconds)>" },
+            { "Max", "<maximum daily online time of the user (in seconds)>" }
+        };
+
+        var response = new Dictionary<string, object>
+        {
+            { "users", userMetrics},
+            { "Metrics", metricsDescription },
+        };
+
+        return Results.Json(response);
     });
 }

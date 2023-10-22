@@ -15,6 +15,13 @@ public class User
     public DateTimeOffset? LastSeenDate { get; set; }
     public string Nickname { get; set; }
     public bool IsOnline { get; set; }
+    public Dictionary<string, double> Metrics { get; set; } // User-specific metrics
+}
+
+public class UserMetricsDto
+{
+    public Guid UserId { get; set; }
+    public Dictionary<string, double> Metrics { get; set; }
 }
 
 public interface ILoader
