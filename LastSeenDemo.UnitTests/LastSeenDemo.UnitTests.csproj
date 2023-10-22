@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\LastSeenDemo.API\LastSeenDemo.API.csproj" />
       <ProjectReference Include="..\LastSeenDemo\LastSeenDemo.csproj" />
     </ItemGroup>
 

@@ -6,7 +6,6 @@ using LastSeenDemo;
 var dateTimeProvider = new DateTimeProvider();
 var loader = new Loader();
 var detector = new OnlineDetector(dateTimeProvider);
-var minMax = new MinMaxDaily(detector);
 var predictor = new Predictor(detector);
 var userLoader = new UserLoader(loader, "https://sef.podkolzin.consulting/api/users/lastSeen");
 var application = new LastSeenApplication(userLoader);
