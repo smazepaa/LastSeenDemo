@@ -43,7 +43,7 @@ public class Report
 public class ReportCreator
 {
     public List<string> Metrics { get; set; }
-    private readonly Worker _worker;
+    public Worker Worker { get; set; }
     private readonly OnlineDetector _detector;
     private MinMaxDaily _minMax;
     private List<Guid> _userGuids;
@@ -51,7 +51,7 @@ public class ReportCreator
     public ReportCreator(List<string> metrics, Worker worker, OnlineDetector onlineDetector)
     {
         Metrics = metrics;
-        _worker = worker;
+        Worker = worker;
         _detector = onlineDetector;
         _minMax = new MinMaxDaily(_detector);
         _userGuids = new List<Guid>
@@ -70,75 +70,78 @@ public class ReportCreator
         var userMetrics = new List<UserMetricsDto>();
         var metricsDescription = new Dictionary<string, string>();
 
-        foreach (var userId in _userGuids)
+        if (Worker.Users != null)
         {
-            if (_worker.Users.TryGetValue(userId, out var userTimeSpans))
+            foreach (var userId in _userGuids)
             {
-                var user = userList.FirstOrDefault(u => u.UserId == userId);
-                if (user != null)
+                if (Worker.Users.TryGetValue(userId, out var userTimeSpans))
                 {
-                    user.Metrics = new Dictionary<string, double>();
-                    foreach (var metric in Metrics)
+                    var user = userList.FirstOrDefault(u => u.UserId == userId);
+                    if (user != null)
                     {
-                        switch (metric)
+                        user.Metrics = new Dictionary<string, double>();
+                        foreach (var metric in Metrics)
                         {
-                            case "Total":
-                                user.Metrics[metric] = _detector.CalculateTotalTimeForUser(userTimeSpans);
-                                if (!metricsDescription.ContainsKey(metric))
-                                {
-                                    metricsDescription.Add("Total",
-                                        "<total time that user was online during selected date range (in seconds)>");
-                                }
+                            switch (metric)
+                            {
+                                case "Total":
+                                    user.Metrics[metric] = _detector.CalculateTotalTimeForUser(userTimeSpans);
+                                    if (!metricsDescription.ContainsKey(metric))
+                                    {
+                                        metricsDescription.Add("Total",
+                                            "<total time that user was online during selected date range (in seconds)>");
+                                    }
 
-                                break;
-                            case "DailyAverage":
-                                user.Metrics[metric] = _detector.CalculateDailyAverageForUser(userTimeSpans);
-                                if (!metricsDescription.ContainsKey(metric))
-                                {
-                                    metricsDescription.Add("DailyAverage",
-                                        "<average time that user was online during the day (in seconds)>");
-                                }
+                                    break;
+                                case "DailyAverage":
+                                    user.Metrics[metric] = _detector.CalculateDailyAverageForUser(userTimeSpans);
+                                    if (!metricsDescription.ContainsKey(metric))
+                                    {
+                                        metricsDescription.Add("DailyAverage",
+                                            "<average time that user was online during the day (in seconds)>");
+                                    }
 
-                                break;
-                            case "WeeklyAverage":
-                                user.Metrics[metric] = _detector.CalculateWeeklyAverageForUser(userTimeSpans);
-                                if (!metricsDescription.ContainsKey(metric))
-                                {
-                                    metricsDescription.Add("WeeklyAverage",
-                                        "<average time that user was online during the week (in seconds)>");
-                                }
+                                    break;
+                                case "WeeklyAverage":
+                                    user.Metrics[metric] = _detector.CalculateWeeklyAverageForUser(userTimeSpans);
+                                    if (!metricsDescription.ContainsKey(metric))
+                                    {
+                                        metricsDescription.Add("WeeklyAverage",
+                                            "<average time that user was online during the week (in seconds)>");
+                                    }
 
-                                break;
-                            case "Min":
-                                var (min, max) = _minMax.CalculateMinMax(userTimeSpans, from, to);
-                                user.Metrics[metric] = min;
-                                if (!metricsDescription.ContainsKey(metric))
-                                {
-                                    metricsDescription.Add("Min",
-                                        "<minimum daily online time of the user (in seconds)>");
-                                }
+                                    break;
+                                case "Min":
+                                    var (min, max) = _minMax.CalculateMinMax(userTimeSpans, from, to);
+                                    user.Metrics[metric] = min;
+                                    if (!metricsDescription.ContainsKey(metric))
+                                    {
+                                        metricsDescription.Add("Min",
+                                            "<minimum daily online time of the user (in seconds)>");
+                                    }
 
-                                break;
-                            case "Max":
-                                var (min2, max2) = _minMax.CalculateMinMax(userTimeSpans, from, to);
-                                user.Metrics[metric] = max2;
-                                if (!metricsDescription.ContainsKey(metric))
-                                {
-                                    metricsDescription.Add("Max",
-                                        "<maximum daily online time of the user (in seconds)>");
-                                }
+                                    break;
+                                case "Max":
+                                    var (min2, max2) = _minMax.CalculateMinMax(userTimeSpans, from, to);
+                                    user.Metrics[metric] = max2;
+                                    if (!metricsDescription.ContainsKey(metric))
+                                    {
+                                        metricsDescription.Add("Max",
+                                            "<maximum daily online time of the user (in seconds)>");
+                                    }
 
-                                break;
+                                    break;
+                            }
                         }
+
+                        var userMetricsDto = new UserMetricsDto
+                        {
+                            UserId = user.UserId,
+                            Metrics = user.Metrics
+                        };
+
+                        userMetrics.Add(userMetricsDto);
                     }
-
-                    var userMetricsDto = new UserMetricsDto
-                    {
-                        UserId = user.UserId,
-                        Metrics = user.Metrics
-                    };
-
-                    userMetrics.Add(userMetricsDto);
                 }
             }
         }

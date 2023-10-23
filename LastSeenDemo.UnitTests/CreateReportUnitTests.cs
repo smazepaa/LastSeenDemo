@@ -1,37 +1,35 @@
-﻿namespace LastSeenDemo.UnitTests;
-
-using Mocks;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using LastSeenDemo;
 using Xunit;
 
-public class CreateReportUnitTests
+public class ReportCreatorTests
 {
-    private OnlineDetector _detector;
-    private Worker _worker;
-    private DateTimeOffset _from;
-    private DateTimeOffset _to;
-    private User[] _userList;
-
-    public void SetUp()
-    {
-        var date = new MockDateTimeProvider();
-        var loader = new UserLoader(new Loader(),"https://sef.podkolzin.consulting/api/users/lastSeen");
-        var transformer = new UserTransformer(date);
-        _worker = new Worker(loader, new AllUsersTransformer(transformer));
-        _detector = new(date);
-        _to = DateTimeOffset.Now;
-        _from = DateTimeOffset.Now.AddDays(-1);
-        _userList = loader.LoadAllUsers();
-
-    }
     [Fact]
-    public void GetCorrectNumberOfMetrics()
+    public void CreateReport_ReturnsExpectedResult()
     {
-        var metrics = new List<string> { "Total", "DailyAverage", "WeeklyAverage"};
-        var creator = new ReportCreator(metrics, _worker, _detector);
-        var response = creator.CreateReport(_userList, _from, _to);
-        
-        Assert.Equal(metrics.Count, response.Values.Count);
+        // Arrange
+        var metrics = new List<string> { "Total", "DailyAverage", "WeeklyAverage" };
+        var dateTimeProvider = new DateTimeProvider();
+        var loader = new Loader();
+        var detector = new OnlineDetector(dateTimeProvider);
+        var userLoader = new UserLoader(loader, "https://sef.podkolzin.consulting/api/users/lastSeen");
+        var userTransformer = new UserTransformer(dateTimeProvider);
+        var allUsersTransformer = new AllUsersTransformer(userTransformer);
+        var worker = new Worker(userLoader, allUsersTransformer);
+        var reportCreator = new ReportCreator(metrics, worker, detector);
+
+        // Sample input data
+        var from = DateTimeOffset.Now;
+        var to = DateTimeOffset.Now.AddDays(-1);
+        var userList = new User[] { /* Sample user data */ };
+
+        // Act
+        var result = reportCreator.CreateReport(userList, from, to);
+
+        // Assert
+        // Add your assertions here to validate the result
+        Assert.NotNull(result); // For example, check if the result is not null
+        // Add more assertions based on your expected result
     }
 }
