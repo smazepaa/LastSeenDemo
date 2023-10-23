@@ -120,6 +120,10 @@ public class OnlineDetector : IOnlineDetector
 
     private double CalculateAverageForUser(List<UserTimeSpan> user, TimeSpan stepInterval)
     {
+        if (user.Count == 0)
+        {
+            return 0;
+        }
         var firstOnline = user.Min(x => x.Login);
         var dayStart = _dateTimeProvider.GetCurrentTime().Date;
         var dayEnd = dayStart + stepInterval;
