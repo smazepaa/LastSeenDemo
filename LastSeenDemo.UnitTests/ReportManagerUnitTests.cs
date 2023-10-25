@@ -3,7 +3,7 @@ namespace LastSeenDemo.UnitTests;
 
 public class ReportManagerUnitTests
 {
-    private ReportManager _manager = new ("test_reports.json");
+    private readonly ReportManager _manager = new ("test_reports.json");
 
     [Fact]
     public void AddReport_Should_Add_Report()
@@ -50,14 +50,18 @@ public class ReportManagerUnitTests
             Metrics = new List<string> { "Metric1", "Metric2" },
             Users = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() }
         };
-        _manager.AddReport(newReport);
+
+        // Create an instance of ReportManager and initialize it
+        var manager = new ReportManager("test_reports.json"); // You may need to pass any required dependencies to the constructor
+        manager.AddReport(newReport);
 
         // Act
-        _manager.SaveReports();
+        manager.SaveReports();
 
         // Assert
-        Assert.NotEmpty(_manager.Reports);
+        Assert.NotEmpty(manager.Reports);
     }
+
 
     // Clean up the test file after all tests have run
     public ReportManagerUnitTests()

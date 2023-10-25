@@ -12,7 +12,7 @@ public class ReportConfiguration
 public class ReportManager
 {
     private readonly string _reportsFilePath;
-    private List<ReportConfiguration> _reports;
+    private List<ReportConfiguration> _reports = new();
 
     public ReportManager(string filePath)
     {
