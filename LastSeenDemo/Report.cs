@@ -48,20 +48,13 @@ public class ReportCreator
     private MinMaxDaily _minMax;
     private List<Guid> _userGuids;
     
-    public ReportCreator(List<string> metrics, Worker worker, OnlineDetector onlineDetector)
+    public ReportCreator(List<string> metrics, Worker worker, OnlineDetector onlineDetector, List<Guid> users)
     {
         Metrics = metrics;
         Worker = worker;
         _detector = onlineDetector;
         _minMax = new MinMaxDaily(_detector);
-        _userGuids = new List<Guid>
-        {
-            new Guid("2fba2529-c166-8574-2da2-eac544d82634"),
-            new Guid("8b0b5db6-19d6-d777-575e-915c2a77959a"),
-            new Guid("e13412b2-fe46-7149-6593-e47043f39c91"),
-            new Guid("cbf0d80b-8532-070b-0df6-a0279e65d0b2"),
-            new Guid("de5b8815-1689-7c78-44e1-33375e7e2931")
-        };
+        _userGuids = users;
     }
     
     public Dictionary<string, object> CreateReport(User[] userList, DateTimeOffset from,
