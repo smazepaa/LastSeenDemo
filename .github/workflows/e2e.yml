@@ -23,4 +23,4 @@ jobs:
       run: dotnet publish -o out
     - name: Run
       run: |
-        dotnet out/LastSeenDemo.API.dll --urls=http://app.lastseen.sbs
+        dotnet out/LastSeenDemo.API.dll --urls=http://localhost:5000
