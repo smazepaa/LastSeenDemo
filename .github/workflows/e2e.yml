@@ -24,7 +24,7 @@ jobs:
     - name: Run
       run: |
         dotnet out/LastSeenDemo.API.dll --urls=http://localhost:5000 &
-        while ! nc -z localhost 8000; do sleep 1; done &
+        while ! nc -z localhost 5000; do sleep 1; done &
         echo "API is up" &
         echo "===========================" &
         dotnet out/LastSeenDemo.API.dll --urls=http://localhost:5000
