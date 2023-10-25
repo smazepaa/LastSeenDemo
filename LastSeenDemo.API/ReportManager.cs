@@ -5,21 +5,21 @@ namespace LastSeenDemo;
 
 public class ReportManager
 {
-    private List<Report> reports = new List<Report>();
+    private List<ReportConfiguration> reports = new List<ReportConfiguration>();
     private string reportsFilePath = "reports.json";
 
-    public List<Report> Reports
+    public List<ReportConfiguration> Reports
     {
         get { return reports; }
         set { reports = value; }
     }
 
-    public ReportManager()
+    public ReportManager(string reportsJson)
     {
         LoadReports();
     }
 
-    public void AddReport(Report report)
+    public void AddReport(ReportConfiguration report)
     {
         reports.Add(report);
         SaveReports();
@@ -30,7 +30,7 @@ public class ReportManager
         if (File.Exists(reportsFilePath))
         {
             var json = File.ReadAllText(reportsFilePath);
-            reports = JsonSerializer.Deserialize<List<Report>>(json);
+            reports = JsonSerializer.Deserialize<List<ReportConfiguration>>(json);
         }
     }
 

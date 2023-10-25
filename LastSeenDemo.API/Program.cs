@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using LastSeenDemo;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 // Global Application Services
 var dateTimeProvider = new DateTimeProvider();
@@ -13,15 +14,15 @@ var userTransformer = new UserTransformer(dateTimeProvider);
 var allUsersTransformer = new AllUsersTransformer(userTransformer);
 var worker = new Worker(userLoader, allUsersTransformer);
 
+var reports = new List<ReportConfiguration>();
+
 // End Global Application Services
-//var reportManager = new ReportManager();
 
 Task.Run(worker.LoadDataPeriodically); // Launch collecting data in background
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 // APIs
 var app = builder.Build();
@@ -32,10 +33,10 @@ Setup2ndAssignmentsEndpoints();
 Setup3rdAssignmentsEndpoints();
 Setup4thAssignmentsEndpoints();
 Setup5thAssignmentsEndpoints();
+Setup8thAssignmentEndpoints();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
 app.Run();
 
 void Setup2ndAssignmentsEndpoints()
@@ -118,46 +119,50 @@ void Setup4thAssignmentsEndpoints()
 
 void Setup5thAssignmentsEndpoints()
 {
-    app.MapPost("/api/report/overall", async (HttpContext context) =>
+    var userGuids = new List<Guid>
     {
-        // Read the JSON data from the request body
-        using (StreamReader reader = new StreamReader(context.Request.Body, Encoding.UTF8))
-        {
-            var requestBody = await reader.ReadToEndAsync();
-
-            // Deserialize the JSON to get the report request data
-            var reportRequest = JsonSerializer.Deserialize<ReportRequest>(requestBody);
-
-            if (reportRequest == null)
-            {
-                context.Response.StatusCode = 400; // Bad Request
-                return;
-            }
-            
-            var report = new Report("overall", reportRequest.Users, reportRequest.Metrics, worker, detector);
-
-            if (report == null)
-            {
-                context.Response.StatusCode = 404; // Not Found
-                return;
-            }
-            //reportManager.AddReport(report);
-
-            // Assuming the report is successfully created, return the report as JSON
-            context.Response.StatusCode = 200; // OK
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(report));
-
-        }
-    });
+        new ("2fba2529-c166-8574-2da2-eac544d82634"),
+        new ("8b0b5db6-19d6-d777-575e-915c2a77959a"),
+        new ("e13412b2-fe46-7149-6593-e47043f39c91"),
+        new ("cbf0d80b-8532-070b-0df6-a0279e65d0b2"),
+        new ("de5b8815-1689-7c78-44e1-33375e7e2931")
+    };
+    
+    var metrics = new List<string> { "Total", "DailyAverage", "WeeklyAverage", "Min", "Max" };
+    var userList = userLoader.LoadAllUsers();
 
     app.MapGet("/api/report/overall", (DateTimeOffset from, DateTimeOffset to) =>
     {
-        var userList = userLoader.LoadAllUsers();
-        var metrics = new List<string> { "Total", "DailyAverage", "WeeklyAverage", "Min", "Max" };
-        var reportCreator = new ReportCreator(metrics, worker, detector);
+        var reportCreator = new ReportCreator(metrics, worker, detector, userGuids);
         var response = reportCreator.CreateReport(userList, from, to);
 
+        var report = new ReportConfiguration
+        {
+            Name = "Overall",
+            Metrics = metrics,
+            Users = userGuids
+        };
+        
+        if (!reports.Contains(report))
+        {
+            reports.Add(report);
+        }
+        
         return Results.Json(response);
+    });
+}
+
+void Setup8thAssignmentEndpoints()
+{
+    app.MapGet("/api/reports", () =>
+    {
+        var reportManager = new ReportManager("reports.json");
+        foreach (var report in reports)
+        {
+            reportManager.AddReport(report);
+        }
+        
+        var configuredReports = reportManager.Reports;
+        return Results.Json(configuredReports);
     });
 }
