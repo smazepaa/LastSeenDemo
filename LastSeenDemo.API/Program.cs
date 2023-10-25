@@ -162,4 +162,6 @@ void Setup8thAssignmentEndpoints()
         var configuredReports = reportManager.Reports;
         return Results.Json(configuredReports);
     });
+    
+    app.MapGet("/test", () => "checking if it swagger shows the gets");
 }
