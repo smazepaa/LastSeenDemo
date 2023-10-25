@@ -1,42 +1,49 @@
 ﻿using System.Text.Json;
-
 namespace LastSeenDemo;
+using System.Text.Json;
 
+public class ReportConfiguration
+{
+    public string Name { get; set; }
+    public List<string> Metrics { get; set; }
+    public List<Guid> Users { get; set; }
+}
 
 public class ReportManager
 {
-    private List<ReportConfiguration> reports = new List<ReportConfiguration>();
-    private string reportsFilePath = "reports.json";
+    private readonly string _reportsFilePath;
+    private List<ReportConfiguration> _reports;
+
+    public ReportManager(string filePath)
+    {
+        _reportsFilePath = filePath;
+        LoadReports();
+    }
 
     public List<ReportConfiguration> Reports
     {
-        get { return reports; }
-        set { reports = value; }
-    }
-
-    public ReportManager(string reportsJson)
-    {
-        LoadReports();
+        get { return _reports; }
+        set { _reports = value; }
     }
 
     public void AddReport(ReportConfiguration report)
     {
-        reports.Add(report);
+        _reports.Add(report);
         SaveReports();
     }
 
     private void LoadReports()
     {
-        if (File.Exists(reportsFilePath))
+        if (File.Exists(_reportsFilePath))
         {
-            var json = File.ReadAllText(reportsFilePath);
-            reports = JsonSerializer.Deserialize<List<ReportConfiguration>>(json);
+            var json = File.ReadAllText(_reportsFilePath);
+            _reports = JsonSerializer.Deserialize<List<ReportConfiguration>>(json);
         }
     }
 
-    private void SaveReports()
+    public void SaveReports()
     {
-        var json = JsonSerializer.Serialize(reports);
-        File.WriteAllText(reportsFilePath, json);
+        var json = JsonSerializer.Serialize(_reports);
+        File.WriteAllText(_reportsFilePath, json);
     }
 }

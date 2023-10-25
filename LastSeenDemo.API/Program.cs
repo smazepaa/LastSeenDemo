@@ -1,7 +1,4 @@
-using System.Text;
-using System.Text.Json;
 using LastSeenDemo;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 // Global Application Services
 var dateTimeProvider = new DateTimeProvider();
