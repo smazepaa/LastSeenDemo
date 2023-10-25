@@ -26,15 +26,15 @@ jobs:
           chmod 600 deploy.key
       - name: Stop the server
         run: |
-          if ssh -o StrictHostKeyChecking=no -i deploy_key $VM_USER@$VM_IP "systemctl is-active AutoDemo"; then
-            ssh -o StrictHostKeyChecking=no -i deploy_key $VM_USER@$VM_IP "service AutoDemo stop"
+          if ssh -o StrictHostKeyChecking=no -i deploy_key $VM_USER@$VM_IP "systemctl is-active LastSeenDemo"; then
+            ssh -o StrictHostKeyChecking=no -i deploy_key $VM_USER@$VM_IP "service LastSeenDemo stop"
           else
             echo "Service doesn't exist or is not running. No need to stop."
           fi
       - name: Upload
         run: |
           # Upload the service file
-          scp -o StrictHostKeyChecking=no -i deploy.key AutoDemo.service $VM_USER@$VM_IP:/etc/systemd/system/AutoDemo.service
+          scp -o StrictHostKeyChecking=no -i deploy.key LastSeenDemo.service $VM_USER@$VM_IP:/etc/systemd/system/LastSeenDemo.service
           # Reload the daemon
           ssh -o StrictHostKeyChecking=no -i deploy.key $VM_USER@$VM_IP "systemctl daemon-reload"
           # Create the /server folder if it doesn't exist
@@ -43,4 +43,4 @@ jobs:
           scp -o StrictHostKeyChecking=no -i deploy.key -r output $VM_USER@$VM_IP:/server
       - name: Run the server 
         run: |
-          ssh -o StrictHostKeyChecking=no -i deploy.key $VM_USER@$VM_IP "service AutoDemo restart"
+          ssh -o StrictHostKeyChecking=no -i deploy.key $VM_USER@$VM_IP "service LastSeenDemo restart"
