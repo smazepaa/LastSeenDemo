@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Key Test
 
 on:
     push:
@@ -16,5 +16,5 @@ jobs:
             - name: Set up SSH key
               run: |
                   echo "$SSH_PRIVATE_KEY" > id_rsa
+                  chmod 600 id_rsa
                   ssh -o StrictHostKeyChecking=no -i id_rsa $SSH_USERNAME@$VM_IP "dir"
-            
