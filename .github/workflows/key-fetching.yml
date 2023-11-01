@@ -9,7 +9,9 @@ jobs:
     build:
         runs-on: ubuntu-latest
         env:
+            SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
             SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            VM_IP: ${{ secrets.VM_IP }}
         steps:
             - name: Set up SSH key
               run: |
