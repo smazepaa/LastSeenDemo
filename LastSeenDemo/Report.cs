@@ -147,4 +147,25 @@ public class ReportCreator
 
         return response;
     }
+
+    public List<Dictionary<string, object>> FirstSeenReport(User[] users)
+    {
+        var response = new List<Dictionary<string, object>>();
+
+        foreach (var user in users)
+        {
+            user.FirstSeen = Worker.FindFirstSeenDate(user.UserId);
+            var userMetrics = new Dictionary<string, object>
+            {
+                { "username", user.Nickname },
+                { "userId", user.UserId },
+                { "firstSeen", user.FirstSeen }
+            };
+
+            response.Add(userMetrics);
+        }
+
+        return response;
+    }
+
 }
