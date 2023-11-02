@@ -23,4 +23,5 @@ jobs:
       run: dotnet publish -o out
     - name: Run
       run: |
-        dotnet out/LastSeenDemo.API.dll --urls=http://localhost:8000
+        dotnet out/LastSeenDemo.API.dll --urls=http://localhost:8000 &
+        while ! nc -z localhost 8000; do sleep 1; done
