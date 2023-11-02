@@ -163,3 +163,11 @@ void Setup8thAssignmentEndpoints()
         return Results.Json(configuredReports);
     });
 }
+
+void SetupFinalEndpoints()
+{
+    app.MapGet("/api/users/list", () =>
+    {
+        
+    });
+}

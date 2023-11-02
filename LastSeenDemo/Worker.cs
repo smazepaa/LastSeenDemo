@@ -40,4 +40,16 @@ public class Worker
         Users.Remove(userId);
         OnlineUsers.Remove(userId);
     }
+    
+    public DateTimeOffset? FindFirstSeenDate(Guid userId)
+    {
+        if (Users.TryGetValue(userId, out var userTimeSpans) && userTimeSpans.Count > 0)
+        {
+            var sortedTimeSpans = userTimeSpans.OrderBy(uts => uts.Login).ToList();
+            return sortedTimeSpans[0].Login;
+        }
+    
+        return null;
+    }
+
 }

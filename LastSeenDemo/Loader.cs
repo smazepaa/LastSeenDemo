@@ -16,6 +16,8 @@ public class User
     public string Nickname { get; set; }
     public bool IsOnline { get; set; }
     public Dictionary<string, double> Metrics { get; set; } // User-specific metrics
+    
+    public DateTimeOffset? FirstSeen { get; set; }
 }
 
 public class UserMetricsDto
