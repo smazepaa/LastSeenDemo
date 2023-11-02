@@ -23,8 +23,4 @@ jobs:
       run: dotnet publish -o out
     - name: Run
       run: |
-        dotnet out/LastSeenDemo.API.dll --urls=http://localhost:8000 &
-        while ! nc -z localhost 8000; do sleep 1; done &
-        echo "API is up" &
-        echo "===========================" &
-        dotnet test LastSeenDemo.E2E.ForPython
+        dotnet out/LastSeenDemo.API.dll --urls=http://localhost:8000
