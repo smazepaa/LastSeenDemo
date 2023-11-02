@@ -15,6 +15,8 @@ var reports = new List<ReportConfiguration>();
 
 // End Global Application Services
 
+var userList = userLoader.LoadAllUsers();
+
 Task.Run(worker.LoadDataPeriodically); // Launch collecting data in background
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +33,7 @@ Setup3rdAssignmentsEndpoints();
 Setup4thAssignmentsEndpoints();
 Setup5thAssignmentsEndpoints();
 Setup8thAssignmentEndpoints();
+SetupFinalEndpoints();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -126,7 +129,7 @@ void Setup5thAssignmentsEndpoints()
     };
     
     var metrics = new List<string> { "Total", "DailyAverage", "WeeklyAverage", "Min", "Max" };
-    var userList = userLoader.LoadAllUsers();
+    
 
     app.MapGet("/api/report/overall", (DateTimeOffset from, DateTimeOffset to) =>
     {
@@ -161,5 +164,15 @@ void Setup8thAssignmentEndpoints()
         
         var configuredReports = reportManager.Reports;
         return Results.Json(configuredReports);
+    });
+}
+
+void SetupFinalEndpoints()
+{
+    app.MapGet("/api/users/list", () =>
+    {
+        var reportCreator = new ReportCreator(null, worker, detector, null);
+        var firstSeen = reportCreator.FirstSeenReport(userList);
+        return Results.Json(firstSeen);
     });
 }
