@@ -1,5 +1,7 @@
 using LastSeenDemo;
 
+namespace LastSeenDemo;
+    
 public interface IOnlineDetector
 {
     bool Detect(List<UserTimeSpan> data, DateTimeOffset date);

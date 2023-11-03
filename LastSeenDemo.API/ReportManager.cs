@@ -4,15 +4,14 @@ using System.Text.Json;
 
 public class ReportConfiguration
 {
-    public string Name { get; set; }
-    public List<string> Metrics { get; set; }
-    public List<Guid> Users { get; set; }
+    public string Name { get; set; } = "";
+    public List<string>? Metrics { get; set; } = new List<string>();
+    public List<Guid>? Users { get; set; } = new List<Guid>();
 }
 
 public class ReportManager
 {
     private readonly string _reportsFilePath;
-    private List<ReportConfiguration> _reports = new();
 
     public ReportManager(string filePath)
     {
@@ -20,15 +19,11 @@ public class ReportManager
         LoadReports();
     }
 
-    public List<ReportConfiguration> Reports
-    {
-        get { return _reports; }
-        set { _reports = value; }
-    }
+    public List<ReportConfiguration>? Reports { get; set; } = new();
 
     public void AddReport(ReportConfiguration report)
     {
-        _reports.Add(report);
+        Reports!.Add(report);
         SaveReports();
     }
 
@@ -37,13 +32,13 @@ public class ReportManager
         if (File.Exists(_reportsFilePath))
         {
             var json = File.ReadAllText(_reportsFilePath);
-            _reports = JsonSerializer.Deserialize<List<ReportConfiguration>>(json);
+            Reports = JsonSerializer.Deserialize<List<ReportConfiguration>>(json);
         }
     }
 
     public void SaveReports()
     {
-        var json = JsonSerializer.Serialize(_reports);
+        var json = JsonSerializer.Serialize(Reports);
         File.WriteAllText(_reportsFilePath, json);
     }
 }

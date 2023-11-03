@@ -16,9 +16,9 @@ public class Worker
     public Dictionary<Guid, List<UserTimeSpan>> Users { get; }
     public List<Guid> OnlineUsers { get; } = new();
 
-    public void LoadDataPeriodically()
+    public void LoadDataPeriodically(CancellationToken cancellationToken)
     {
-        while (true)
+        while (cancellationToken.IsCancellationRequested)
         {
             Console.WriteLine("Loading data");
             LoadDataIteration();

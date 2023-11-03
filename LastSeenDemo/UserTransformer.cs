@@ -33,11 +33,11 @@ public class UserTransformer : IUserTransformer
         {
             if (stateOfUserInCurrentTime.IsOnline)
             {
-                userTimeSpans.Last().Logout = _dateTimeProvider.GetCurrentTime();
+                userTimeSpans[^1].Logout = _dateTimeProvider.GetCurrentTime();
             }
-            else
+            else if (stateOfUserInCurrentTime.LastSeenDate != null)
             {
-                userTimeSpans.Last().Logout = stateOfUserInCurrentTime.LastSeenDate.Value;
+                userTimeSpans[^1].Logout = stateOfUserInCurrentTime.LastSeenDate.Value;
             }
         }
         else
