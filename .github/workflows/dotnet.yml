@@ -4,25 +4,47 @@
 name: .NET
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    push:
+        branches: [ "master" ]
+    pull_request:
+        branches: [ "master" ]
 
 jobs:
-  build:
+    build:
+        
+        runs-on: ubuntu-latest
+        env:
+            Scripts: ./.github/workflows/Scripts
+        steps:
+            - uses: actions/checkout@v3
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: 7.0.x
+            - name: Restore dependencies
+              run: dotnet restore
+            - name: Build
+              run: dotnet build --no-restore
+            - name: UnitTest
+              run: dotnet test LastSeenDemo.UnitTests --no-build --verbosity normal --collect:"XPlat Code Coverage"
+            - name: IntegrationTest
+              run: dotnet test LastSeenDemo.IntegrationTest --no-build --verbosity normal --collect:"XPlat Code Coverage"
+            - name: Install ReportGenerator
+              run: dotnet tool install -g dotnet-reportgenerator-globaltool
+            - name: Install dotnet-coverage
+              run: dotnet tool install -g dotnet-coverage
+            - name: Merge Coverage
+              run: dotnet-coverage merge *.cobertura.xml --recursive --output merged.cobertura.xml --output-format cobertura
+            - name: Build Coverage Report
+              run: reportgenerator -reports:"merged.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v2
+              with:
+                  name: coverage-artifacts
+                  path: coveragereport/
 
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: UnitTest
-      run: dotnet test LastSeenDemo.UnitTests --no-build --verbosity normal
+            - name: Calculate Code Coverage Percentage with PowerShell
+              shell: pwsh
+              run: ${{ env.Scripts }}/extract-coverage.ps1
+              env:
+                  COVERAGE_THRESHOLD: $coverageThreshold
