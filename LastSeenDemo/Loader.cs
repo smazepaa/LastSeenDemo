@@ -6,16 +6,16 @@ namespace LastSeenDemo;
 public class Page
 {
     public int Total { get; set; }
-    public User[] Data { get; set; }
+    public User[] Data { get; set; } = Array.Empty<User>();
 }
 
 public class User
 {
     public Guid UserId { get; set; }
     public DateTimeOffset? LastSeenDate { get; set; }
-    public string Nickname { get; set; }
+    public string Nickname { get; set; } = "";
     public bool IsOnline { get; set; }
-    public Dictionary<string, double> Metrics { get; set; } // User-specific metrics
+    public Dictionary<string, double> Metrics { get; set; } = new(); // User-specific metrics
     
     public DateTimeOffset? FirstSeen { get; set; }
 }
@@ -23,7 +23,7 @@ public class User
 public class UserMetricsDto
 {
     public Guid UserId { get; set; }
-    public Dictionary<string, double> Metrics { get; set; }
+    public Dictionary<string, double> Metrics { get; set; } = new Dictionary<string, double>();
 }
 
 public interface ILoader

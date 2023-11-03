@@ -1,5 +1,7 @@
 using LastSeenDemo;
 
+namespace LastSeenDemo;
+
 public class UserLoader
 {
     private readonly ILoader _loader;

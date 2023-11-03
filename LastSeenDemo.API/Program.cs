@@ -17,7 +17,10 @@ var reports = new List<ReportConfiguration>();
 
 var userList = userLoader.LoadAllUsers();
 
-Task.Run(worker.LoadDataPeriodically); // Launch collecting data in background
+// ReSharper disable once UnusedVariable
+#pragma warning disable S1481
+var _ = Task.Run(() => worker.LoadDataPeriodically(default)); // Launch collecting data in background
+#pragma warning restore S1481
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();

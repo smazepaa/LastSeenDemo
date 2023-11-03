@@ -1,8 +1,15 @@
 ﻿namespace LastSeenDemo;
-using LastSeenDemo;
 
 public class ReportRequest
 {
+    public ReportRequest(List<string> metrics, List<Guid> users, DateTimeOffset from, DateTimeOffset to)
+    {
+        Metrics = metrics;
+        Users = users;
+        From = from;
+        To = to;
+    }
+
     public List<string> Metrics { get; set; }
     public List<Guid> Users { get; set; }
     public DateTimeOffset From { get; set; }
@@ -19,36 +26,33 @@ public class ReportItem
     public double Max { get; set; }
 }
 
+
 public class Report
 {
     public string Name { get; set; }
     public List<Guid> Users { get; set; }
     public List<string> Metrics { get; set; }
-    private readonly Worker _worker;
     private readonly OnlineDetector _detector;
-    private MinMaxDaily _minMax;
-    
+
     public Report(string reportName, List<Guid> users, List<string> metrics, Worker worker, OnlineDetector onlineDetector)
     {
         Name = reportName;
         Metrics = metrics;
-        _worker = worker;
         _detector = onlineDetector;
-        _minMax = new MinMaxDaily(_detector);
+        new MinMaxDaily(_detector);
         Users = users;
     }
-    
 }
 
 public class ReportCreator
 {
-    public List<string> Metrics { get; set; }
+    public List<string>? Metrics { get; set; }
     public Worker Worker { get; set; }
     private readonly OnlineDetector _detector;
-    private MinMaxDaily _minMax;
-    private List<Guid> _userGuids;
+    private readonly MinMaxDaily _minMax;
+    private readonly List<Guid>? _userGuids;
     
-    public ReportCreator(List<string> metrics, Worker worker, OnlineDetector onlineDetector, List<Guid> users)
+    public ReportCreator(List<string>? metrics, Worker worker, OnlineDetector onlineDetector, List<Guid>? users)
     {
         Metrics = metrics;
         Worker = worker;
@@ -65,15 +69,15 @@ public class ReportCreator
 
         if (Worker.Users != null)
         {
-            foreach (var userId in _userGuids)
+            foreach (var userId in _userGuids!)
             {
                 if (Worker.Users.TryGetValue(userId, out var userTimeSpans))
                 {
-                    var user = userList.FirstOrDefault(u => u.UserId == userId);
+                    var user = Array.Find(userList, u => u.UserId == userId);
                     if (user != null)
                     {
                         user.Metrics = new Dictionary<string, double>();
-                        foreach (var metric in Metrics)
+                        foreach (var metric in Metrics!)
                         {
                             switch (metric)
                             {
@@ -105,7 +109,7 @@ public class ReportCreator
 
                                     break;
                                 case "Min":
-                                    var (min, max) = _minMax.CalculateMinMax(userTimeSpans, from, to);
+                                    var (min, _) = _minMax.CalculateMinMax(userTimeSpans, from, to);
                                     user.Metrics[metric] = min;
                                     if (!metricsDescription.ContainsKey(metric))
                                     {
@@ -115,7 +119,7 @@ public class ReportCreator
 
                                     break;
                                 case "Max":
-                                    var (min2, max2) = _minMax.CalculateMinMax(userTimeSpans, from, to);
+                                    var (_, max2) = _minMax.CalculateMinMax(userTimeSpans, from, to);
                                     user.Metrics[metric] = max2;
                                     if (!metricsDescription.ContainsKey(metric))
                                     {
@@ -148,14 +152,14 @@ public class ReportCreator
         return response;
     }
 
-    public List<Dictionary<string, object>> FirstSeenReport(User[] users)
+    public List<Dictionary<string, object?>> FirstSeenReport(User[] users)
     {
-        var response = new List<Dictionary<string, object>>();
+        var response = new List<Dictionary<string, object?>>();
 
         foreach (var user in users)
         {
             user.FirstSeen = Worker.FindFirstSeenDate(user.UserId);
-            var userMetrics = new Dictionary<string, object>
+            var userMetrics = new Dictionary<string, object?>
             {
                 { "username", user.Nickname },
                 { "userId", user.UserId },
